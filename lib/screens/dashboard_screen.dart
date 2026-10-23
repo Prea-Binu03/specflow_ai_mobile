@@ -403,16 +403,88 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     Widget dashboardSidebar = Container(
-      width: _isSidebarCollapsed ? 70 : 230,
-      color: const Color(0xFF1E293B),
+      width: _isSidebarCollapsed ? 70 : 250,
+      color: const Color(0xFF161E2E),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!_isSidebarCollapsed)
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF3B82F6),
+                        width: 2,
+                      ),
+                    ),
+                    child: const CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Color(0xFF1E293B),
+                      child: Icon(
+                        Icons.person,
+                        color: Color(0xFF3B82F6),
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.userEmail,
+                          style: const TextStyle(
+                            color: Colors.white60,
+                            fontSize: 10,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
             const Padding(
-              padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: Color(0xFF1E293B),
+                  child: Icon(Icons.person, color: Color(0xFF3B82F6), size: 18),
+                ),
+              ),
+            ),
+          const SizedBox(height: 10),
+          if (!_isSidebarCollapsed)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: Text(
-                'NAVIGATION',
+                'WORKSPACE',
                 style: TextStyle(
                   color: Colors.white38,
                   fontSize: 11,
@@ -420,126 +492,119 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   letterSpacing: 1.2,
                 ),
               ),
-            )
-          else
-            const SizedBox(height: 20),
-          _buildSidebarItem(0, 'Home', Icons.home_outlined, Icons.home, () {
-            setState(() => _currentIndex = 0);
-            if (isMobile) Navigator.pop(context);
-          }),
-          _buildSidebarItem(
-            1,
-            'Create Project',
-            Icons.add_circle_outline,
-            Icons.add_circle,
-            () async {
-              if (isMobile) Navigator.pop(context);
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      CreateProjectScreen(userEmail: widget.userEmail),
-                ),
-              );
-              if (result == true) _fetchDashboardData();
-            },
-          ),
-          _buildSidebarItem(
-            2,
-            'My Projects',
-            Icons.folder_outlined,
-            Icons.folder,
-            () {
-              if (isMobile) Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ProjectsScreen(userEmail: widget.userEmail),
-                ),
-              );
-            },
-          ),
-          _buildSidebarItem(
-            3,
-            'AI Assistant',
-            Icons.chat_bubble_outline,
-            Icons.chat_bubble,
-            () {
-              if (isMobile) Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      AiAssistantScreen(userEmail: widget.userEmail),
-                ),
-              );
-            },
-          ),
-          _buildSidebarItem(
-            4,
-            'Profile Settings',
-            Icons.settings_outlined,
-            Icons.settings,
-            () {
-              if (isMobile) Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ProfileScreen(userEmail: widget.userEmail),
-                ),
-              );
-            },
-          ),
-          const Spacer(),
-          if (!_isSidebarCollapsed)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.bolt, color: Colors.amberAccent, size: 20),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Gemini Engine',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'v3.8 Flash Active',
-                            style: TextStyle(
-                              color: Colors.white54,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20.0),
-              child: Center(
-                child: Icon(Icons.bolt, color: Colors.amberAccent, size: 22),
-              ),
             ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildSidebarItem(
+                  0,
+                  'Home',
+                  Icons.home_outlined,
+                  Icons.home,
+                  () {
+                    setState(() => _currentIndex = 0);
+                    if (isMobile) Navigator.pop(context);
+                  },
+                ),
+                _buildSidebarItem(
+                  1,
+                  'Create Project',
+                  Icons.add_circle_outline,
+                  Icons.add_circle,
+                  () async {
+                    if (isMobile) Navigator.pop(context);
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            CreateProjectScreen(userEmail: widget.userEmail),
+                      ),
+                    );
+                    if (result == true) _fetchDashboardData();
+                  },
+                ),
+                _buildSidebarItem(
+                  2,
+                  'My Projects',
+                  Icons.folder_outlined,
+                  Icons.folder,
+                  () {
+                    if (isMobile) Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ProjectsScreen(userEmail: widget.userEmail),
+                      ),
+                    );
+                  },
+                ),
+                _buildSidebarItem(
+                  3,
+                  'AI Assistant',
+                  Icons.chat_bubble_outline,
+                  Icons.chat_bubble,
+                  () {
+                    if (isMobile) Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AiAssistantScreen(userEmail: widget.userEmail),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(color: Colors.white24, height: 24),
+                _buildSidebarItem(
+                  4,
+                  'Profile Settings',
+                  Icons.settings_outlined,
+                  Icons.settings,
+                  () {
+                    if (isMobile) Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ProfileScreen(userEmail: widget.userEmail),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: _isSidebarCollapsed ? 16 : 16,
+                  ),
+                  leading: const Icon(
+                    Icons.logout,
+                    color: Colors.redAccent,
+                    size: 20,
+                  ),
+                  title: _isSidebarCollapsed
+                      ? null
+                      : const Text(
+                          'Logout',
+                          style: TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                  onTap: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AuthScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -1294,7 +1359,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
-                    width: _isSidebarCollapsed ? 70 : 230,
+                    width: _isSidebarCollapsed ? 70 : 250,
                     child: dashboardSidebar,
                   ),
                   Expanded(child: dashboardMainContent),
