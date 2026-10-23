@@ -1085,87 +1085,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(65),
+        preferredSize: const Size.fromHeight(60),
         child: AppBar(
           backgroundColor: const Color(0xFF1E293B),
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: Row(
-            children: [
-              IconButton(
-                icon: Icon(
-                  isMobile
-                      ? Icons.menu
-                      : (_isSidebarCollapsed ? Icons.menu : Icons.menu_open),
-                  color: Colors.white,
-                  size: 22,
-                ),
-                tooltip: 'Toggle Sidebar',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: () {
-                  if (isMobile) {
-                    showGeneralDialog(
-                      context: context,
-                      barrierDismissible: true,
-                      barrierLabel: 'Sidebar',
-                      barrierColor: Colors.black54,
-                      transitionDuration: const Duration(milliseconds: 200),
-                      pageBuilder: (context, anim1, anim2) {
-                        return Align(
-                          alignment: Alignment.centerLeft,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: SizedBox(
-                              width: 260,
-                              height: double.infinity,
-                              child: dashboardSidebar,
+          title: SafeArea(
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    isMobile
+                        ? Icons.menu
+                        : (_isSidebarCollapsed ? Icons.menu : Icons.menu_open),
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  tooltip: 'Toggle Sidebar',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  onPressed: () {
+                    if (isMobile) {
+                      showGeneralDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        barrierLabel: 'Sidebar',
+                        barrierColor: Colors.black54,
+                        transitionDuration: const Duration(milliseconds: 200),
+                        pageBuilder: (context, anim1, anim2) {
+                          return Align(
+                            alignment: Alignment.centerLeft,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: SizedBox(
+                                width: 260,
+                                height: double.infinity,
+                                child: dashboardSidebar,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    );
-                  } else {
-                    setState(() {
-                      _isSidebarCollapsed = !_isSidebarCollapsed;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2563EB),
-                  borderRadius: BorderRadius.circular(8),
+                          );
+                        },
+                      );
+                    } else {
+                      setState(() {
+                        _isSidebarCollapsed = !_isSidebarCollapsed;
+                      });
+                    }
+                  },
                 ),
-                child: const Icon(
-                  Icons.auto_awesome,
-                  color: Colors.white,
-                  size: 16,
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2563EB),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome,
+                    color: Colors.white,
+                    size: 14,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'SpecFlow AI',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
+                const SizedBox(width: 6),
+                const Flexible(
+                  child: Text(
+                    'SpecFlow AI',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                ),
-                child: PopupMenuButton<String>(
+                const Spacer(),
+                PopupMenuButton<String>(
                   offset: const Offset(0, 45),
                   color: const Color(0xFF1E293B),
                   shape: RoundedRectangleBorder(
@@ -1181,27 +1178,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: Icon(
                           Icons.person,
                           color: Colors.white,
-                          size: 16,
+                          size: 14,
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 110),
+                        constraints: const BoxConstraints(maxWidth: 70),
                         child: Text(
                           userName,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
-                            fontSize: 13,
+                            fontSize: 12,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 2),
                       const Icon(
                         Icons.arrow_drop_down,
                         color: Colors.white70,
-                        size: 18,
+                        size: 16,
                       ),
                     ],
                   ),
@@ -1286,8 +1282,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

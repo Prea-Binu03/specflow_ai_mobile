@@ -28,7 +28,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   bool _isLoading = true;
   bool _isDeleting = false;
   bool _isSaving = false;
-  bool _isSidebarVisible = true;
+  bool _isSidebarVisible = false;
   Map<String, dynamic>? _project;
   String _errorMessage = '';
 
@@ -96,7 +96,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
     try {
       final response = await http.get(
-       Uri.parse(
+        Uri.parse(
           'https://specflow-ai-mobile-backend.onrender.com/api/projects/${widget.projectId}',
         ),
       );
@@ -163,7 +163,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       updatedAiPlan['developmentTasks'] = updatedTasksList;
 
       final response = await http.put(
-        Uri.parse('https://specflow-ai-mobile-backend.onrender.com/api/projects/${widget.projectId}'),
+        Uri.parse(
+          'https://specflow-ai-mobile-backend.onrender.com/api/projects/${widget.projectId}',
+        ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'aiPlan': updatedAiPlan}),
       );
@@ -500,7 +502,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  // 📝 Clean Word Document Exporter (No yellow line artifacts in Word)
   Future<void> _exportDocx() async {
     if (_project == null) return;
 
@@ -934,6 +935,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 768;
     String userEmail = _project != null
         ? (_project!['userEmail'] ?? 'tina@gmail.com')
         : 'tina@gmail.com';
@@ -972,7 +974,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             right: BorderSide(color: Colors.white.withOpacity(0.08)),
           ),
         ),
-        child: Column(
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
             Container(
               padding: const EdgeInsets.all(22),
@@ -1049,262 +1052,1217 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 ),
               ),
             ),
-            Material(
-              color: Colors.transparent,
-              child: ListTile(
-                leading: const Icon(
-                  Icons.home_outlined,
-                  color: Colors.white70,
-                  size: 20,
-                ),
-                title: const Text(
-                  'Dashboard / Home',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          DashboardScreen(userEmail: userEmail),
-                    ),
-                  );
-                },
+            ListTile(
+              leading: const Icon(
+                Icons.home_outlined,
+                color: Colors.white70,
+                size: 20,
               ),
-            ),
-            Material(
-              color: Colors.transparent,
-              child: ListTile(
-                leading: const Icon(
-                  Icons.folder_outlined,
-                  color: Colors.white70,
-                  size: 20,
-                ),
-                title: const Text(
-                  'My Projects',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ProjectsScreen(userEmail: userEmail),
-                    ),
-                  );
-                },
+              title: const Text(
+                'Dashboard / Home',
+                style: TextStyle(color: Colors.white70, fontSize: 13),
               ),
-            ),
-            Material(
-              color: Colors.transparent,
-              child: ListTile(
-                leading: const Icon(
-                  Icons.auto_awesome_outlined,
-                  color: Colors.white70,
-                  size: 20,
-                ),
-                title: const Text(
-                  'AI Assistant',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          AiAssistantScreen(userEmail: userEmail),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Material(
-              color: Colors.transparent,
-              child: ListTile(
-                leading: const Icon(
-                  Icons.add_circle_outline,
-                  color: Colors.white70,
-                  size: 20,
-                ),
-                title: const Text(
-                  'Create Project',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          CreateProjectScreen(userEmail: userEmail),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const Spacer(),
-            Divider(color: Colors.white.withOpacity(0.08), height: 1),
-            Material(
-              color: Colors.transparent,
-              child: ListTile(
-                leading: const Icon(
-                  Icons.settings_outlined,
-                  color: Colors.white70,
-                  size: 20,
-                ),
-                title: const Text(
-                  'Profile Settings',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProfileScreen(userEmail: userEmail),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Material(
-              color: Colors.transparent,
-              child: ListTile(
-                leading: const Icon(
-                  Icons.logout,
-                  color: Colors.redAccent,
-                  size: 20,
-                ),
-                title: const Text(
-                  'Logout',
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
+              onTap: () {
+                if (isMobile) Navigator.pop(context);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DashboardScreen(userEmail: userEmail),
                   ),
-                ),
-                onTap: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AuthScreen()),
-                    (route) => false,
-                  );
-                },
-              ),
+                );
+              },
             ),
-            const SizedBox(height: 12),
+            ListTile(
+              leading: const Icon(
+                Icons.folder_outlined,
+                color: Colors.white70,
+                size: 20,
+              ),
+              title: const Text(
+                'My Projects',
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              onTap: () {
+                if (isMobile) Navigator.pop(context);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProjectsScreen(userEmail: userEmail),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.auto_awesome_outlined,
+                color: Colors.white70,
+                size: 20,
+              ),
+              title: const Text(
+                'AI Assistant',
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              onTap: () {
+                if (isMobile) Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        AiAssistantScreen(userEmail: userEmail),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.add_circle_outline,
+                color: Colors.white70,
+                size: 20,
+              ),
+              title: const Text(
+                'Create Project',
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              onTap: () {
+                if (isMobile) Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        CreateProjectScreen(userEmail: userEmail),
+                  ),
+                );
+              },
+            ),
+            const Divider(color: Colors.white24, height: 32),
+            ListTile(
+              leading: const Icon(
+                Icons.settings_outlined,
+                color: Colors.white70,
+                size: 20,
+              ),
+              title: const Text(
+                'Profile Settings',
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              onTap: () {
+                if (isMobile) Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(userEmail: userEmail),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.logout,
+                color: Colors.redAccent,
+                size: 20,
+              ),
+              title: const Text(
+                'Logout',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onTap: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuthScreen()),
+                  (route) => false,
+                );
+              },
+            ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
     );
 
+    Widget mainProjectContent = _isLoading
+        ? const Center(
+            child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+          )
+        : _errorMessage.isNotEmpty
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  color: Colors.redAccent,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage,
+                  style: const TextStyle(color: Colors.white70, fontSize: 15),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: _fetchProjectDetails,
+                  child: const Text(
+                    'Retry',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          )
+        : _project == null
+        ? const Center(
+            child: Text(
+              'Project not found',
+              style: TextStyle(color: Colors.white70),
+            ),
+          )
+        : RefreshIndicator(
+            onRefresh: _fetchProjectDetails,
+            color: const Color(0xFF3B82F6),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0284C7),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: _exportPdf,
+                        icon: const Icon(
+                          Icons.picture_as_pdf,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Export PDF',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6366F1),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: _exportDocx,
+                        icon: const Icon(
+                          Icons.description,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Export DOCX',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      bool isWide = constraints.maxWidth > 850;
+                      Widget mainBanner = Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text(
+                                  'PROJECT WORKSPACE',
+                                  style: TextStyle(
+                                    color: Color(0xFF3B82F6),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.1,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.green.withOpacity(0.5),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    _project!['aiStatus'] ?? 'Completed',
+                                    style: const TextStyle(
+                                      color: Colors.greenAccent,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _project!['projectName'] ?? 'Untitled Project',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              _project!['projectIdea'] ??
+                                  'No description provided.',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                                height: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Wrap(
+                              spacing: 16,
+                              runSpacing: 8,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.layers_outlined,
+                                      color: Colors.white60,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Type: $projectType',
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (domain.isNotEmpty)
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.domain,
+                                        color: Colors.white60,
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Domain: $domain',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+
+                      Widget whyStack = Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Icon(
+                                    Icons.lightbulb_outline,
+                                    color: Colors.amber,
+                                    size: 18,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'Why This Stack?',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              whyThisStackText,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (isWide) {
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 3, child: mainBanner),
+                            const SizedBox(width: 20),
+                            Expanded(flex: 2, child: whyStack),
+                          ],
+                        );
+                      } else {
+                        return Column(
+                          children: [
+                            mainBanner,
+                            const SizedBox(height: 20),
+                            whyStack,
+                          ],
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 28),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: const Text(
+                                '⚡ AI Recommended Technology Stack',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3B82F6).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: const Color(0xFF3B82F6)
+                                      .withOpacity(0.5),
+                                ),
+                              ),
+                              child: const Text(
+                                'AI Selected',
+                                style: TextStyle(
+                                  color: Color(0xFF3B82F6),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 14,
+                          runSpacing: 14,
+                          children: recommendedStack.entries.map((entry) {
+                            return _buildTechChip(entry.key, entry.value);
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '🔄 Alternative Technology Options',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Other architectural approaches considered by AI for this domain:',
+                          style: TextStyle(color: Colors.white60, fontSize: 12),
+                        ),
+                        const SizedBox(height: 16),
+                        ...alternativeOptions.asMap().entries.map((entry) {
+                          int idx = entry.key;
+                          var alt = entry.value;
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white12),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: const Color(0xFF3B82F6),
+                                  child: Text(
+                                    '${idx + 1}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        alt['name'] ?? 'Alternative Option',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        alt['desc'] ?? '',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  const Text(
+                    'Detailed Specification Modules',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildCustomAccordionModule(
+                    index: 0,
+                    title: 'Project Overview',
+                    subtitle: 'AI-generated comprehensive understanding of your project.',
+                    icon: Icons.description_outlined,
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          (_project!['aiPlan'] != null &&
+                                  _project!['aiPlan']['overview'] != null)
+                              ? _project!['aiPlan']['overview']
+                              : (_project!['projectIdea'] ??
+                                    'Comprehensive system overview and operational workflow details.'),
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                            height: 1.6,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'This platform utilizes domain-specific intelligence to synthesize requirements, automate task decomposition, and produce production-ready code modules.',
+                          style: TextStyle(
+                            color: Colors.white60,
+                            fontSize: 13,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildCustomAccordionModule(
+                    index: 1,
+                    title: 'Requirements & Features',
+                    subtitle: 'In-depth functional requirements, modules, and constraints.',
+                    icon: Icons.check_circle_outline,
+                    content: Text(
+                      dynamicSpecs['reqs'] ?? '',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildCustomAccordionModule(
+                    index: 2,
+                    title: 'Database & API Design',
+                    subtitle: 'Database schemas, entity relationships, and RESTful endpoints.',
+                    icon: Icons.storage_outlined,
+                    content: Builder(
+                      builder: (context) {
+                        var dbDesign =
+                            (_project != null && _project!['aiPlan'] != null)
+                            ? _project!['aiPlan']['databaseDesign']
+                            : null;
+
+                        if (dbDesign is List && dbDesign.isNotEmpty) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: dbDesign.map<Widget>((tableMap) {
+                              String tableName =
+                                  tableMap['tableName'] ?? 'Table';
+                              List columns = tableMap['columns'] is List
+                                  ? tableMap['columns']
+                                  : [];
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F172A),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.white12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.table_chart,
+                                          color: Color(0xFF3B82F6),
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          tableName,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: DataTable(
+                                        headingRowHeight: 32,
+                                        dataRowMinHeight: 30,
+                                        dataRowMaxHeight: 36,
+                                        columnSpacing: 20,
+                                        columns: const [
+                                          DataColumn(
+                                            label: Text(
+                                              'Column Name',
+                                              style: TextStyle(
+                                                color: Color(0xFF3B82F6),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          DataColumn(
+                                            label: Text(
+                                              'Data Type',
+                                              style: TextStyle(
+                                                color: Color(0xFF3B82F6),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          DataColumn(
+                                            label: Text(
+                                              'Constraint',
+                                              style: TextStyle(
+                                                color: Color(0xFF3B82F6),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                        rows: columns.map<DataRow>((col) {
+                                          return DataRow(
+                                            cells: [
+                                              DataCell(
+                                                Text(
+                                                  col['name']?.toString() ?? '',
+                                                  style: const TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Text(
+                                                  col['type']?.toString() ?? '',
+                                                  style: const TextStyle(
+                                                    color: Colors.greenAccent,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Text(
+                                                  col['constraint']
+                                                          ?.toString() ??
+                                                      '',
+                                                  style: const TextStyle(
+                                                    color: Colors.amberAccent,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        } else {
+                          return Text(
+                            dynamicSpecs['db'] ?? '',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              height: 1.6,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildCustomAccordionModule(
+                    index: 3,
+                    title: 'User Stories & Personas',
+                    subtitle: 'Target user expectations, pain points, and behavioral flows.',
+                    icon: Icons.people_outline,
+                    content: Builder(
+                      builder: (context) {
+                        var rawPersonas =
+                            (_project != null && _project!['aiPlan'] != null)
+                            ? (_project!['aiPlan']['userPersonas'] ??
+                                  _project!['aiPlan']['userStories'])
+                            : null;
+
+                        if (rawPersonas is List && rawPersonas.isNotEmpty) {
+                          var validPersonas = rawPersonas
+                              .where(
+                                (p) =>
+                                    p != null && p.toString().trim().isNotEmpty,
+                              )
+                              .toList();
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: validPersonas
+                                .map(
+                                  (p) => Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 12.0,
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Padding(
+                                          padding: EdgeInsets.only(top: 4.0),
+                                          child: Icon(
+                                            Icons.arrow_right,
+                                            color: Color(0xFF3B82F6),
+                                            size: 16,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            p.toString(),
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 13,
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          );
+                        } else {
+                          return Text(
+                            dynamicSpecs['personas'] ?? '',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              height: 1.6,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildCustomAccordionModule(
+                    index: 4,
+                    title: 'Technical Architecture & Data Flow',
+                    subtitle: 'Microservices layout, caching layers, and communication protocols.',
+                    icon: Icons.architecture,
+                    content: Text(
+                      dynamicSpecs['arch'] ?? '',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildCustomAccordionModule(
+                    index: 5,
+                    title: 'Security & Compliance',
+                    subtitle: 'Encryption standards, access control policies, and data retention.',
+                    icon: Icons.security,
+                    content: Text(
+                      dynamicSpecs['sec'] ?? '',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildCustomAccordionModule(
+                    index: 6,
+                    title: 'Development Tasks & Implementation Plan',
+                    subtitle:
+                        '$completedCount of ${_taskTitles.length} tasks completed',
+                    icon: Icons.task_alt,
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: LinearProgressIndicator(
+                                  value: progressPercent,
+                                  backgroundColor: Colors.white12,
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                        Color(0xFF3B82F6),
+                                      ),
+                                  minHeight: 8,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: _isSaving ? null : _saveTasksProgress,
+                              icon: _isSaving
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.save,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                              label: Text(
+                                _isSaving ? 'Saving...' : 'Save Progress',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _taskTitles.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F172A),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _taskCompleted[index]
+                                      ? Colors.green.withOpacity(0.4)
+                                      : Colors.white12,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Checkbox(
+                                    value: _taskCompleted[index],
+                                    activeColor: const Color(0xFF3B82F6),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _taskCompleted[index] = val ?? false;
+                                      });
+                                    },
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Task ${index + 1}: ${_taskTitles[index]}',
+                                          style: TextStyle(
+                                            color: _taskCompleted[index]
+                                                ? Colors.white38
+                                                : Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            decoration: _taskCompleted[index]
+                                                ? TextDecoration.lineThrough
+                                                : null,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        const Text(
+                                          'Status: Ready for code generation',
+                                          style: TextStyle(
+                                            color: Colors.white54,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  OutlinedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(
+                                        color: Color(0xFF3B82F6),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      _showGenerateCodeDialog(
+                                        index,
+                                        _taskTitles[index],
+                                      );
+                                    },
+                                    child: const Text(
+                                      'Generate Code',
+                                      style: TextStyle(
+                                        color: Color(0xFF3B82F6),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
+        preferredSize: const Size.fromHeight(60),
         child: AppBar(
           backgroundColor: const Color(0xFF111827),
           elevation: 0,
-          leadingWidth: 100,
-          leading: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(width: 4),
-              IconButton(
-                icon: const Icon(Icons.menu, color: Colors.white, size: 20),
-                tooltip: 'Toggle Sidebar',
-                onPressed: () {
-                  setState(() {
-                    _isSidebarVisible = !_isSidebarVisible;
-                  });
-                },
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                tooltip: 'Back to Projects',
-                onPressed: () => Navigator.pop(context, true),
-              ),
-            ],
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+          automaticallyImplyLeading: false,
+          title: SafeArea(
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white, size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
                   ),
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF3B82F6).withOpacity(0.4),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                  tooltip: 'Toggle Sidebar',
+                  onPressed: () {
+                    if (isMobile) {
+                      showGeneralDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        barrierLabel: 'Sidebar',
+                        barrierColor: Colors.black54,
+                        transitionDuration: const Duration(milliseconds: 200),
+                        pageBuilder: (context, anim1, anim2) {
+                          return Align(
+                            alignment: Alignment.centerLeft,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: SizedBox(
+                                width: 260,
+                                height: double.infinity,
+                                child: premiumSidebar,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    } else {
+                      setState(() {
+                        _isSidebarVisible = !_isSidebarVisible;
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(width: 2),
+                IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  tooltip: 'Back to Projects',
+                  onPressed: () => Navigator.pop(context, true),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(
+                          Icons.rocket_launch,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Flexible(
+                        child: Text(
+                          'Project Workspace',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.redAccent,
+                    size: 20,
+                  ),
+                  tooltip: 'Delete Project',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  onPressed: _deleteProject,
+                ),
+                const SizedBox(width: 4),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.purpleAccent,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.rocket_launch,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Project Workspace',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-          iconTheme: const IconThemeData(color: Colors.white),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-              tooltip: 'Delete Project',
-              onPressed: _deleteProject,
-            ),
-            const SizedBox(width: 4),
-            TextButton.icon(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.purpleAccent,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                backgroundColor: Colors.purpleAccent.withOpacity(0.12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                String projName = _project?['projectName'] ?? 'Project';
-                String projDomain = _project?['domain'] ?? '';
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AiAssistantScreen(
-                      userEmail: userEmail,
-                      initialProjectContext:
-                          "Hi! I need help regarding my project '$projName' (Domain: $projDomain).",
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    backgroundColor: Colors.purpleAccent.withOpacity(0.12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.smart_toy_outlined, size: 16),
-              label: const Text(
-                'Ask AI',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
+                  onPressed: () {
+                    String projName = _project?['projectName'] ?? 'Project';
+                    String projDomain = _project?['domain'] ?? '';
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AiAssistantScreen(
+                          userEmail: userEmail,
+                          initialProjectContext:
+                              "Hi! I need help regarding my project '$projName' (Domain: $projDomain).",
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.smart_toy_outlined, size: 14),
+                  label: const Text(
+                    'Ask AI',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(width: 4),
+              ],
             ),
-            const SizedBox(width: 12),
-          ],
+          ),
         ),
       ),
       body: Row(
@@ -1321,1021 +2279,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
             ),
           ),
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
-                  )
-                : _errorMessage.isNotEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.redAccent,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _errorMessage,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF3B82F6),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onPressed: _fetchProjectDetails,
-                          child: const Text(
-                            'Retry',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : _project == null
-                ? const Center(
-                    child: Text(
-                      'Project not found',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: _fetchProjectDetails,
-                    color: const Color(0xFF3B82F6),
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0284C7),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 10,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                onPressed: _exportPdf,
-                                icon: const Icon(
-                                  Icons.picture_as_pdf,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                                label: const Text(
-                                  'Export PDF',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF6366F1),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 10,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                onPressed: _exportDocx,
-                                icon: const Icon(
-                                  Icons.description,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                                label: const Text(
-                                  'Export DOCX',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          LayoutBuilder(
-                            builder: (context, constraints) {
-                              bool isWide = constraints.maxWidth > 850;
-                              Widget mainBanner = Container(
-                                padding: const EdgeInsets.all(24),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF1E293B),
-                                      Color(0xFF0F172A),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        const Text(
-                                          'PROJECT WORKSPACE',
-                                          style: TextStyle(
-                                            color: Color(0xFF3B82F6),
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 1.1,
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.green.withOpacity(
-                                              0.2,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                            border: Border.all(
-                                              color: Colors.green.withOpacity(
-                                                0.5,
-                                              ),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            _project!['aiStatus'] ??
-                                                'Completed',
-                                            style: const TextStyle(
-                                              color: Colors.greenAccent,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      _project!['projectName'] ??
-                                          'Untitled Project',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      _project!['projectIdea'] ??
-                                          'No description provided.',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 14,
-                                        height: 1.5,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    Wrap(
-                                      spacing: 16,
-                                      runSpacing: 8,
-                                      children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.layers_outlined,
-                                              color: Colors.white60,
-                                              size: 14,
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              'Type: $projectType',
-                                              style: const TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        if (domain.isNotEmpty)
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.domain,
-                                                color: Colors.white60,
-                                                size: 14,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                'Domain: $domain',
-                                                style: const TextStyle(
-                                                  color: Colors.white70,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-
-                              Widget whyStack = Container(
-                                padding: const EdgeInsets.all(24),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1E293B),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(6),
-                                          decoration: BoxDecoration(
-                                            color: Colors.amber.withOpacity(
-                                              0.2,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            Icons.lightbulb_outline,
-                                            color: Colors.amber,
-                                            size: 18,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        const Text(
-                                          'Why This Stack?',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 14),
-                                    Text(
-                                      whyThisStackText,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 13,
-                                        height: 1.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-
-                              if (isWide) {
-                                return Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(flex: 3, child: mainBanner),
-                                    const SizedBox(width: 20),
-                                    Expanded(flex: 2, child: whyStack),
-                                  ],
-                                );
-                              } else {
-                                return Column(
-                                  children: [
-                                    mainBanner,
-                                    const SizedBox(height: 20),
-                                    whyStack,
-                                  ],
-                                );
-                              }
-                            },
-                          ),
-                          const SizedBox(height: 28),
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: const Text(
-                                        '⚡ AI Recommended Technology Stack',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF3B82F6)
-                                            .withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                          color: const Color(0xFF3B82F6)
-                                              .withOpacity(0.5),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        'AI Selected',
-                                        style: TextStyle(
-                                          color: Color(0xFF3B82F6),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Wrap(
-                                  spacing: 14,
-                                  runSpacing: 14,
-                                  children: recommendedStack.entries.map((
-                                    entry,
-                                  ) {
-                                    return _buildTechChip(
-                                      entry.key,
-                                      entry.value,
-                                    );
-                                  }).toList(),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 28),
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  '🔄 Alternative Technology Options',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                const Text(
-                                  'Other architectural approaches considered by AI for this domain:',
-                                  style: TextStyle(
-                                    color: Colors.white60,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                ...alternativeOptions.asMap().entries.map((
-                                  entry,
-                                ) {
-                                  int idx = entry.key;
-                                  var alt = entry.value;
-                                  return Container(
-                                    margin: const EdgeInsets.only(bottom: 12),
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF0F172A),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.white12),
-                                    ),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 12,
-                                          backgroundColor: const Color(
-                                            0xFF3B82F6,
-                                          ),
-                                          child: Text(
-                                            '${idx + 1}',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 14),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                alt['name'] ??
-                                                    'Alternative Option',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                alt['desc'] ?? '',
-                                                style: const TextStyle(
-                                                  color: Colors.white70,
-                                                  fontSize: 12,
-                                                  height: 1.4,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 28),
-                          const Text(
-                            'Detailed Specification Modules',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildCustomAccordionModule(
-                            index: 0,
-                            title: 'Project Overview',
-                            subtitle: 'AI-generated comprehensive understanding of your project.',
-                            icon: Icons.description_outlined,
-                            content: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  (_project!['aiPlan'] != null &&
-                                          _project!['aiPlan']['overview'] !=
-                                              null)
-                                      ? _project!['aiPlan']['overview']
-                                      : (_project!['projectIdea'] ??
-                                            'Comprehensive system overview and operational workflow details.'),
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                    height: 1.6,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                const Text(
-                                  'This platform utilizes domain-specific intelligence to synthesize requirements, automate task decomposition, and produce production-ready code modules.',
-                                  style: TextStyle(
-                                    color: Colors.white60,
-                                    fontSize: 13,
-                                    height: 1.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildCustomAccordionModule(
-                            index: 1,
-                            title: 'Requirements & Features',
-                            subtitle: 'In-depth functional requirements, modules, and constraints.',
-                            icon: Icons.check_circle_outline,
-                            content: Text(
-                              dynamicSpecs['reqs'] ?? '',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                                height: 1.6,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildCustomAccordionModule(
-                            index: 2,
-                            title: 'Database & API Design',
-                            subtitle: 'Database schemas, entity relationships, and RESTful endpoints.',
-                            icon: Icons.storage_outlined,
-                            content: Builder(
-                              builder: (context) {
-                                var dbDesign =
-                                    (_project != null &&
-                                        _project!['aiPlan'] != null)
-                                    ? _project!['aiPlan']['databaseDesign']
-                                    : null;
-
-                                if (dbDesign is List && dbDesign.isNotEmpty) {
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: dbDesign.map<Widget>((tableMap) {
-                                      String tableName =
-                                          tableMap['tableName'] ?? 'Table';
-                                      List columns = tableMap['columns'] is List
-                                          ? tableMap['columns']
-                                          : [];
-
-                                      return Container(
-                                        margin: const EdgeInsets.only(
-                                          bottom: 16,
-                                        ),
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF0F172A),
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          border: Border.all(
-                                            color: Colors.white12,
-                                          ),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                const Icon(
-                                                  Icons.table_chart,
-                                                  color: Color(0xFF3B82F6),
-                                                  size: 16,
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  tableName,
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 8),
-                                            SingleChildScrollView(
-                                              scrollDirection: Axis.horizontal,
-                                              child: DataTable(
-                                                headingRowHeight: 32,
-                                                dataRowMinHeight: 30,
-                                                dataRowMaxHeight: 36,
-                                                columnSpacing: 20,
-                                                columns: const [
-                                                  DataColumn(
-                                                    label: Text(
-                                                      'Column Name',
-                                                      style: TextStyle(
-                                                        color: Color(
-                                                          0xFF3B82F6,
-                                                        ),
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataColumn(
-                                                    label: Text(
-                                                      'Data Type',
-                                                      style: TextStyle(
-                                                        color: Color(
-                                                          0xFF3B82F6,
-                                                        ),
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataColumn(
-                                                    label: Text(
-                                                      'Constraint',
-                                                      style: TextStyle(
-                                                        color: Color(
-                                                          0xFF3B82F6,
-                                                        ),
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                                rows: columns.map<DataRow>((
-                                                  col,
-                                                ) {
-                                                  return DataRow(
-                                                    cells: [
-                                                      DataCell(
-                                                        Text(
-                                                          col['name']
-                                                                  ?.toString() ??
-                                                              '',
-                                                          style:
-                                                              const TextStyle(
-                                                                color: Colors
-                                                                    .white70,
-                                                                fontSize: 12,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                      DataCell(
-                                                        Text(
-                                                          col['type']
-                                                                  ?.toString() ??
-                                                              '',
-                                                          style: const TextStyle(
-                                                            color: Colors
-                                                                .greenAccent,
-                                                            fontSize: 12,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      DataCell(
-                                                        Text(
-                                                          col['constraint']
-                                                                  ?.toString() ??
-                                                              '',
-                                                          style: const TextStyle(
-                                                            color: Colors
-                                                                .amberAccent,
-                                                            fontSize: 12,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  );
-                                                }).toList(),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    }).toList(),
-                                  );
-                                } else {
-                                  return Text(
-                                    dynamicSpecs['db'] ?? '',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 13,
-                                      height: 1.6,
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildCustomAccordionModule(
-                            index: 3,
-                            title: 'User Stories & Personas',
-                            subtitle: 'Target user expectations, pain points, and behavioral flows.',
-                            icon: Icons.people_outline,
-                            content: Builder(
-                              builder: (context) {
-                                var rawPersonas =
-                                    (_project != null &&
-                                        _project!['aiPlan'] != null)
-                                    ? (_project!['aiPlan']['userPersonas'] ??
-                                          _project!['aiPlan']['userStories'])
-                                    : null;
-
-                                if (rawPersonas is List &&
-                                    rawPersonas.isNotEmpty) {
-                                  var validPersonas = rawPersonas
-                                      .where(
-                                        (p) =>
-                                            p != null &&
-                                            p.toString().trim().isNotEmpty,
-                                      )
-                                      .toList();
-
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: validPersonas
-                                        .map(
-                                          (p) => Padding(
-                                            padding: const EdgeInsets.only(
-                                              bottom: 12.0,
-                                            ),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Padding(
-                                                  padding: EdgeInsets.only(
-                                                    top: 4.0,
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.arrow_right,
-                                                    color: Color(0xFF3B82F6),
-                                                    size: 16,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 6),
-                                                Expanded(
-                                                  child: Text(
-                                                    p.toString(),
-                                                    style: const TextStyle(
-                                                      color: Colors.white70,
-                                                      fontSize: 13,
-                                                      height: 1.5,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                  );
-                                } else {
-                                  return Text(
-                                    dynamicSpecs['personas'] ?? '',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 13,
-                                      height: 1.6,
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildCustomAccordionModule(
-                            index: 4,
-                            title: 'Technical Architecture & Data Flow',
-                            subtitle: 'Microservices layout, caching layers, and communication protocols.',
-                            icon: Icons.architecture,
-                            content: Text(
-                              dynamicSpecs['arch'] ?? '',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                                height: 1.6,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildCustomAccordionModule(
-                            index: 5,
-                            title: 'Security & Compliance',
-                            subtitle: 'Encryption standards, access control policies, and data retention.',
-                            icon: Icons.security,
-                            content: Text(
-                              dynamicSpecs['sec'] ?? '',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                                height: 1.6,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildCustomAccordionModule(
-                            index: 6,
-                            title: 'Development Tasks & Implementation Plan',
-                            subtitle:
-                                '$completedCount of ${_taskTitles.length} tasks completed',
-                            icon: Icons.task_alt,
-                            content: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: LinearProgressIndicator(
-                                          value: progressPercent,
-                                          backgroundColor: Colors.white12,
-                                          valueColor:
-                                              const AlwaysStoppedAnimation<
-                                                Color
-                                              >(Color(0xFF3B82F6)),
-                                          minHeight: 8,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.green,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 10,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                      ),
-                                      onPressed: _isSaving
-                                          ? null
-                                          : _saveTasksProgress,
-                                      icon: _isSaving
-                                          ? const SizedBox(
-                                              width: 14,
-                                              height: 14,
-                                              child: CircularProgressIndicator(
-                                                color: Colors.white,
-                                                strokeWidth: 2,
-                                              ),
-                                            )
-                                          : const Icon(
-                                              Icons.save,
-                                              color: Colors.white,
-                                              size: 16,
-                                            ),
-                                      label: Text(
-                                        _isSaving
-                                            ? 'Saving...'
-                                            : 'Save Progress',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: _taskTitles.length,
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      margin: const EdgeInsets.only(bottom: 12),
-                                      padding: const EdgeInsets.all(14),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF0F172A),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: _taskCompleted[index]
-                                              ? Colors.green.withOpacity(0.4)
-                                              : Colors.white12,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Checkbox(
-                                            value: _taskCompleted[index],
-                                            activeColor: const Color(
-                                              0xFF3B82F6,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                            ),
-                                            onChanged: (val) {
-                                              setState(() {
-                                                _taskCompleted[index] =
-                                                    val ?? false;
-                                              });
-                                            },
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Task ${index + 1}: ${_taskTitles[index]}',
-                                                  style: TextStyle(
-                                                    color: _taskCompleted[index]
-                                                        ? Colors.white38
-                                                        : Colors.white,
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w500,
-                                                    decoration:
-                                                        _taskCompleted[index]
-                                                        ? TextDecoration
-                                                              .lineThrough
-                                                        : null,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                const Text(
-                                                  'Status: Ready for code generation',
-                                                  style: TextStyle(
-                                                    color: Colors.white54,
-                                                    fontSize: 11,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          OutlinedButton(
-                                            style: OutlinedButton.styleFrom(
-                                              side: const BorderSide(
-                                                color: Color(0xFF3B82F6),
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 8,
-                                                  ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              _showGenerateCodeDialog(
-                                                index,
-                                                _taskTitles[index],
-                                              );
-                                            },
-                                            child: const Text(
-                                              'Generate Code',
-                                              style: TextStyle(
-                                                color: Color(0xFF3B82F6),
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-          ),
+          Expanded(child: mainProjectContent),
         ],
       ),
     );
