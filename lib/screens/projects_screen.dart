@@ -58,7 +58,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         final data = jsonDecode(response.body);
         setState(() {
           _projects = data['projects'] ?? [];
-          // Strict filtering: Only show 'Generated' projects in My Projects screen as requested
           _filteredProjects = _projects.where((proj) {
             String status = proj['aiStatus'] ?? 'Pending';
             return status == 'Generated';
@@ -86,7 +85,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     setState(() {
       _filteredProjects = _projects.where((proj) {
         String status = proj['aiStatus'] ?? 'Pending';
-        // Only consider Generated projects for the list view
         if (status != 'Generated') return false;
 
         String name = (proj['projectName'] ?? '').toLowerCase();
@@ -115,8 +113,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         : Colors.orangeAccent;
 
     String reason = status == 'Failed'
-        ? 'This project specification generation failed due to a network timeout, invalid server response, or AI model rate limit error. Please try editing or recreating the project spec.'
-        : 'This project is currently queued or awaiting AI engine processing. Please wait a moment or click refresh to check for updates.';
+        ? 'This project specification generation failed due to a network timeout, server connectivity issue, or AI model API limit error. Please try editing or recreating the project spec.'
+        : 'This project specification is currently queued or awaiting AI engine processing. Please wait a moment and click refresh to check for updates.';
 
     showDialog(
       context: context,
@@ -722,7 +720,11 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                           itemBuilder: (context, index) {
                             final project = _filteredProjects[index];
                             String status = project['aiStatus'] ?? 'Generated';
-                            Color statusColor = Colors.green.shade400;
+                            Color statusColor = status == 'Generated'
+                                ? Colors.green.shade400
+                                : status == 'Failed'
+                                ? Colors.red.shade400
+                                : Colors.orange.shade400;
 
                             final aiPlan = project['aiPlan'];
                             List developmentTasks = [];
@@ -782,16 +784,20 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(16),
                                   onTap: () async {
-                                    final result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            ProjectDetailScreen(
-                                              projectId: project['_id'],
-                                            ),
-                                      ),
-                                    );
-                                    if (result == true) _fetchProjects();
+                                    if (status != 'Generated') {
+                                      _showStatusInfoPopup(project);
+                                    } else {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ProjectDetailScreen(
+                                                projectId: project['_id'],
+                                              ),
+                                        ),
+                                      );
+                                      if (result == true) _fetchProjects();
+                                    }
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(22),
@@ -907,18 +913,25 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                                   ),
                                                   onSelected: (value) async {
                                                     if (value == 'open') {
-                                                      final result = await Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              ProjectDetailScreen(
-                                                                projectId:
-                                                                    project['_id'],
-                                                              ),
-                                                        ),
-                                                      );
-                                                      if (result == true) {
-                                                        _fetchProjects();
+                                                      if (status !=
+                                                          'Generated') {
+                                                        _showStatusInfoPopup(
+                                                          project,
+                                                        );
+                                                      } else {
+                                                        final result = await Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                ProjectDetailScreen(
+                                                                  projectId:
+                                                                      project['_id'],
+                                                                ),
+                                                          ),
+                                                        );
+                                                        if (result == true) {
+                                                          _fetchProjects();
+                                                        }
                                                       }
                                                     } else if (value ==
                                                         'edit') {
