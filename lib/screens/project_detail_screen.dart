@@ -732,7 +732,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     try {
       final response = await http.post(
         Uri.parse(
-          'http://localhost:5001/api/projects/${widget.projectId}/generate-task-code',
+          'https://specflow-ai-mobile-backend.onrender.com/api/projects/${widget.projectId}/generate-task-code',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
