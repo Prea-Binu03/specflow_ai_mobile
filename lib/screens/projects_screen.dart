@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import 'dart:convert';
 
 import 'auth_screen.dart';
@@ -25,7 +26,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   String _errorMessage = '';
 
   final TextEditingController _searchController = TextEditingController();
-  String _selectedFilter = 'All';
 
   @override
   void initState() {
@@ -58,7 +58,11 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         final data = jsonDecode(response.body);
         setState(() {
           _projects = data['projects'] ?? [];
-          _filteredProjects = _projects;
+          // Strict filtering: Only show 'Generated' projects in My Projects screen as requested
+          _filteredProjects = _projects.where((proj) {
+            String status = proj['aiStatus'] ?? 'Pending';
+            return status == 'Generated';
+          }).toList();
           _isLoading = false;
         });
         _filterProjects();
@@ -81,23 +85,73 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     String query = _searchController.text.toLowerCase();
     setState(() {
       _filteredProjects = _projects.where((proj) {
+        String status = proj['aiStatus'] ?? 'Pending';
+        // Only consider Generated projects for the list view
+        if (status != 'Generated') return false;
+
         String name = (proj['projectName'] ?? '').toLowerCase();
         String idea = (proj['projectIdea'] ?? '').toLowerCase();
         String domain = (proj['domain'] ?? '').toLowerCase();
         String type = (proj['projectType'] ?? '').toLowerCase();
 
-        bool matchesSearch =
-            name.contains(query) ||
+        return name.contains(query) ||
             idea.contains(query) ||
             domain.contains(query) ||
             type.contains(query);
-
-        if (_selectedFilter == 'All') return matchesSearch;
-        return matchesSearch &&
-            (proj['aiStatus'] == _selectedFilter ||
-                proj['projectType'] == _selectedFilter);
       }).toList();
     });
+  }
+
+  void _showStatusInfoPopup(Map<String, dynamic> project) {
+    String status = project['aiStatus'] ?? 'Pending';
+    String title = status == 'Failed'
+        ? 'Generation Failed'
+        : 'Generation Pending';
+    IconData icon = status == 'Failed'
+        ? Icons.error_outline
+        : Icons.hourglass_empty;
+    Color iconColor = status == 'Failed'
+        ? Colors.redAccent
+        : Colors.orangeAccent;
+
+    String reason = status == 'Failed'
+        ? 'This project specification generation failed due to a network timeout, invalid server response, or AI model rate limit error. Please try editing or recreating the project spec.'
+        : 'This project is currently queued or awaiting AI engine processing. Please wait a moment or click refresh to check for updates.';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(icon, color: iconColor, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: const TextStyle(color: Colors.white, fontSize: 18),
+            ),
+          ],
+        ),
+        content: Text(
+          reason,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 13,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3B82F6),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _deleteProject(String projectId) async {
@@ -507,9 +561,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
     Widget projectsMainContent = _isLoading
         ? const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF3B82F6),
-            ),
+            child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
           )
         : _errorMessage.isNotEmpty
         ? Center(
@@ -524,10 +576,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                 const SizedBox(height: 16),
                 Text(
                   _errorMessage,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 15,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 15),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
@@ -554,11 +603,9 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                       Expanded(
                         child: TextField(
                           controller: _searchController,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
+                          style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
-                            hintText: 'Search projects by name, domain, or idea...',
+                            hintText: 'Search generated projects by name, domain, or idea...',
                             hintStyle: const TextStyle(
                               color: Colors.white38,
                               fontSize: 13,
@@ -589,50 +636,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.08),
-                          ),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _selectedFilter,
-                            dropdownColor: const Color(0xFF1E293B),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                            ),
-                            icon: const Icon(
-                              Icons.filter_list,
-                              color: Colors.white70,
-                              size: 18,
-                            ),
-                            items:
-                                [
-                                  'All',
-                                  'Generated',
-                                  'Pending',
-                                  'Failed',
-                                ].map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value),
-                                  );
-                                }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                _selectedFilter = newValue!;
-                                _filterProjects();
-                              });
-                            },
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -657,7 +660,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 const Text(
-                                  'No projects found',
+                                  'No generated projects found',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 18,
@@ -666,7 +669,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 const Text(
-                                  'Try adjusting your search or create a new AI specification project.',
+                                  'Only successfully generated project specs appear here. Create a new one to get started!',
                                   style: TextStyle(
                                     color: Colors.white60,
                                     fontSize: 13,
@@ -718,12 +721,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                           itemCount: _filteredProjects.length,
                           itemBuilder: (context, index) {
                             final project = _filteredProjects[index];
-                            String status = project['aiStatus'] ?? 'Pending';
-                            Color statusColor = status == 'Generated'
-                                ? Colors.green.shade400
-                                : status == 'Failed'
-                                ? Colors.red.shade400
-                                : Colors.orange.shade400;
+                            String status = project['aiStatus'] ?? 'Generated';
+                            Color statusColor = Colors.green.shade400;
 
                             final aiPlan = project['aiPlan'];
                             List developmentTasks = [];
@@ -805,8 +804,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Container(
-                                              padding:
-                                                  const EdgeInsets.all(12),
+                                              padding: const EdgeInsets.all(12),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFF3B82F6)
                                                     .withOpacity(0.15),
@@ -842,8 +840,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                                   ),
                                                   const SizedBox(height: 4),
                                                   Text(
-                                                    project['projectIdea'] ??
-                                                        'No description provided.',
+                                                    project['projectIdea'] ?? 'No description provided.',
                                                     style: const TextStyle(
                                                       color: Colors.white60,
                                                       fontSize: 13,
@@ -910,18 +907,16 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                                   ),
                                                   onSelected: (value) async {
                                                     if (value == 'open') {
-                                                      final result =
-                                                          await Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (
-                                                                context,
-                                                              ) => ProjectDetailScreen(
+                                                      final result = await Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              ProjectDetailScreen(
                                                                 projectId:
                                                                     project['_id'],
                                                               ),
-                                                            ),
-                                                          );
+                                                        ),
+                                                      );
                                                       if (result == true) {
                                                         _fetchProjects();
                                                       }
@@ -953,7 +948,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                                           Text(
                                                             'Open Spec',
                                                             style: TextStyle(
-                                                              color: Colors.white,
+                                                              color:
+                                                                  Colors.white,
                                                               fontSize: 13,
                                                             ),
                                                           ),
@@ -974,7 +970,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                                           Text(
                                                             'Edit Spec',
                                                             style: TextStyle(
-                                                              color: Colors.white,
+                                                              color:
+                                                                  Colors.white,
                                                               fontSize: 13,
                                                             ),
                                                           ),
@@ -1066,9 +1063,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                                       valueColor:
                                                           const AlwaysStoppedAnimation<
                                                             Color
-                                                          >(
-                                                            Color(0xFF3B82F6),
-                                                          ),
+                                                          >(Color(0xFF3B82F6)),
                                                       minHeight: 6,
                                                     ),
                                                   ),
@@ -1086,8 +1081,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                                                   style: const TextStyle(
                                                     color: Colors.white54,
                                                     fontSize: 12,
-                                                    fontWeight:
-                                                        FontWeight.w500,
+                                                    fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
                                                 const SizedBox(height: 2),

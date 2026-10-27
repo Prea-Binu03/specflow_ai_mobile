@@ -310,12 +310,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     itemCount: _aiSuggestions.length,
                     itemBuilder: (context, index) {
                       final suggestion = _aiSuggestions[index];
-                      String title =
+                      String rawTitle =
                           suggestion['projectName'] ??
                           suggestion['title'] ??
                           'Project Option';
-                      String desc =
+                      String rawDesc =
                           suggestion['description'] ?? suggestion['idea'] ?? '';
+
+                      bool isRecommended =
+                          rawTitle.contains('[RECOMMENDED]') ||
+                          rawDesc.contains('[RECOMMENDED]');
+                      String title = rawTitle
+                          .replaceAll('[RECOMMENDED]', '')
+                          .trim();
+                      String desc = rawDesc
+                          .replaceAll('[RECOMMENDED]', '')
+                          .trim();
+
                       String domainVal =
                           suggestion['domain'] ??
                           _ideaKeywordController.text.trim();
@@ -347,19 +358,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               color: const Color(0xFF0F172A),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: Colors.purpleAccent.withOpacity(0.4),
+                                color: isRecommended
+                                    ? Colors.amberAccent
+                                    : Colors.purpleAccent.withOpacity(0.4),
+                                width: isRecommended ? 2 : 1,
                               ),
+                              boxShadow: isRecommended
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.amberAccent.withOpacity(
+                                          0.2,
+                                        ),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 0),
+                                      ),
+                                    ]
+                                  : [],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        title,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isRecommended)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.amberAccent.withOpacity(
+                                            0.2,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.amberAccent,
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          '★ RECOMMENDED',
+                                          style: TextStyle(
+                                            color: Colors.amberAccent,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
