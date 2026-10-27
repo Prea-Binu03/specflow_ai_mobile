@@ -87,6 +87,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  void _showStatusInfoPopup(Map<String, dynamic> project) {
+    String status = project['aiStatus'] ?? 'Pending';
+    String title = status == 'Failed'
+        ? 'Generation Failed'
+        : 'Generation Pending';
+    IconData icon = status == 'Failed'
+        ? Icons.error_outline
+        : Icons.hourglass_empty;
+    Color iconColor = status == 'Failed'
+        ? Colors.redAccent
+        : Colors.orangeAccent;
+
+    String reason = status == 'Failed'
+        ? 'This project specification generation failed due to a network timeout, server connectivity issue, or AI model API limit error. Please try editing or recreating the project spec.'
+        : 'This project specification is currently queued or awaiting AI engine processing. Please wait a moment and click refresh to check for updates.';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(icon, color: iconColor, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: const TextStyle(color: Colors.white, fontSize: 18),
+            ),
+          ],
+        ),
+        content: Text(
+          reason,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 13,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3B82F6),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _deleteProject(String projectId) async {
     bool confirm =
         await showDialog(
@@ -873,334 +925,346 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  _projects.isEmpty
-                      ? Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(40),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white12),
-                          ),
-                          child: Column(
-                            children: [
-                              const Icon(
-                                Icons.folder_off_outlined,
-                                size: 48,
-                                color: Colors.white38,
-                              ),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'No projects yet',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                  (() {
+                    List<dynamic> generatedProjects = _projects.where((proj) {
+                      String status = proj['aiStatus'] ?? 'Pending';
+                      return status == 'Generated';
+                    }).toList();
+
+                    return generatedProjects.isEmpty
+                        ? Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(40),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white12),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(
+                                  Icons.folder_off_outlined,
+                                  size: 48,
+                                  color: Colors.white38,
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              const Text(
-                                'Get started by creating your first AI software specification project.',
-                                style: TextStyle(
-                                  color: Colors.white60,
-                                  fontSize: 12,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2563EB),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 10,
-                                  ),
-                                ),
-                                onPressed: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => CreateProjectScreen(
-                                        userEmail: widget.userEmail,
-                                      ),
-                                    ),
-                                  );
-                                  if (result == true) _fetchDashboardData();
-                                },
-                                icon: const Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                                label: const Text(
-                                  'Create Your First Project',
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'No generated projects yet',
                                   style: TextStyle(
                                     color: Colors.white,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _projects.length,
-                          itemBuilder: (context, index) {
-                            final project = _projects[index];
-                            String status = project['aiStatus'] ?? 'Pending';
-                            Color statusColor = status == 'Generated'
-                                ? Colors.green.shade700
-                                : status == 'Failed'
-                                ? Colors.red.shade700
-                                : Colors.orange.shade700;
-
-                            List<dynamic> tasks =
-                                project['aiPlan'] != null &&
-                                    project['aiPlan']['developmentTasks'] !=
-                                        null
-                                ? project['aiPlan']['developmentTasks']
-                                : [];
-                            int totalTasks = tasks.length;
-                            int completedTasks = tasks
-                                .where(
-                                  (t) =>
-                                      t['isCompleted'] == true ||
-                                      t['status'] == 'Completed',
-                                )
-                                .length;
-
-                            double progress = totalTasks > 0
-                                ? (completedTasks / totalTasks)
-                                : 0.0;
-
-                            int progressPercentage = (progress * 100).toInt();
-
-                            final String? projId =
-                                project['_id']?.toString() ??
-                                project['id']?.toString();
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white12),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap: () async {
-                                    if (projId != null && projId.isNotEmpty) {
-                                      final result = await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ProjectDetailScreen(
-                                                projectId: projId,
-                                              ),
-                                        ),
-                                      );
-                                      if (result == true) {
-                                        _fetchDashboardData();
-                                      }
-                                    }
+                                const SizedBox(height: 6),
+                                const Text(
+                                  'Get started by creating your first AI software specification project.',
+                                  style: TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 20),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF2563EB),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 10,
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            CreateProjectScreen(
+                                              userEmail: widget.userEmail,
+                                            ),
+                                      ),
+                                    );
+                                    if (result == true) _fetchDashboardData();
                                   },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF2563EB)
-                                                    .withOpacity(0.15),
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: const Icon(
-                                                Icons.code,
-                                                color: Color(0xFF3B82F6),
-                                                size: 20,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    project['projectName'] ??
-                                                        'Untitled Project',
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    'Type: ${project['projectType'] ?? 'Full-Stack'} ${project['domain'] != null && project['domain'].toString().isNotEmpty ? '• Domain: ${project['domain']}' : ''}',
-                                                    style: const TextStyle(
-                                                      color: Colors.white38,
-                                                      fontSize: 11,
-                                                    ),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Chip(
-                                              label: Text(
-                                                status,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 11,
-                                                ),
-                                              ),
-                                              backgroundColor: statusColor,
-                                              padding: EdgeInsets.zero,
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            PopupMenuButton<String>(
-                                              icon: const Icon(
-                                                Icons.more_vert,
-                                                color: Colors.white70,
-                                                size: 20,
-                                              ),
-                                              color: const Color(0xFF0F172A),
-                                              onSelected: (val) async {
-                                                if (val == 'view' &&
-                                                    projId != null) {
-                                                  final res =
-                                                      await Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              ProjectDetailScreen(
-                                                                projectId:
-                                                                    projId,
-                                                              ),
-                                                        ),
-                                                      );
-                                                  if (res == true)
-                                                    _fetchDashboardData();
-                                                } else if (val == 'delete' &&
-                                                    projId != null) {
-                                                  _deleteProject(projId);
-                                                }
-                                              },
-                                              itemBuilder: (context) => [
-                                                const PopupMenuItem(
-                                                  value: 'view',
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(
-                                                        Icons
-                                                            .visibility_outlined,
-                                                        color: Colors.white70,
-                                                        size: 16,
-                                                      ),
-                                                      SizedBox(width: 8),
-                                                      Text(
-                                                        'View Spec',
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 13,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                const PopupMenuItem(
-                                                  value: 'delete',
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(
-                                                        Icons.delete_outline,
-                                                        color: Colors.redAccent,
-                                                        size: 16,
-                                                      ),
-                                                      SizedBox(width: 8),
-                                                      Text(
-                                                        'Delete Project',
-                                                        style: TextStyle(
-                                                          color:
-                                                              Colors.redAccent,
-                                                          fontSize: 13,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Text(
-                                          project['projectIdea'] ??
-                                              'No description provided.',
-                                          style: const TextStyle(
-                                            color: Colors.white60,
-                                            fontSize: 12,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                                child: LinearProgressIndicator(
-                                                  value: progress,
-                                                  backgroundColor: const Color(
-                                                    0xFF0F172A,
-                                                  ),
-                                                  color: progress == 1.0
-                                                      ? Colors.green
-                                                      : Colors.orangeAccent,
-                                                  minHeight: 6,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Text(
-                                              '$progressPercentage% Done',
-                                              style: const TextStyle(
-                                                color: Colors.white54,
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                  icon: const Icon(
+                                    Icons.add,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                  label: const Text(
+                                    'Create Your First Project',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: generatedProjects.length,
+                            itemBuilder: (context, index) {
+                              final project = generatedProjects[index];
+                              String status =
+                                  project['aiStatus'] ?? 'Generated';
+                              Color statusColor = Colors.green.shade700;
+
+                              List<dynamic> tasks =
+                                  project['aiPlan'] != null &&
+                                      project['aiPlan']['developmentTasks'] !=
+                                          null
+                                  ? project['aiPlan']['developmentTasks']
+                                  : [];
+                              int totalTasks = tasks.length;
+                              int completedTasks = tasks
+                                  .where(
+                                    (t) =>
+                                        t['isCompleted'] == true ||
+                                        t['status'] == 'Completed',
+                                  )
+                                  .length;
+
+                              double progress = totalTasks > 0
+                                  ? (completedTasks / totalTasks)
+                                  : 0.0;
+
+                              int progressPercentage = (progress * 100).toInt();
+
+                              final String? projId =
+                                  project['_id']?.toString() ??
+                                  project['id']?.toString();
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.white12),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () async {
+                                      if (status != 'Generated') {
+                                        _showStatusInfoPopup(project);
+                                      } else if (projId != null &&
+                                          projId.isNotEmpty) {
+                                        final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                ProjectDetailScreen(
+                                                  projectId: projId,
+                                                ),
+                                          ),
+                                        );
+                                        if (result == true) {
+                                          _fetchDashboardData();
+                                        }
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  8,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFF2563EB)
+                                                      .withOpacity(0.15),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.code,
+                                                  color: Color(0xFF3B82F6),
+                                                  size: 20,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      project['projectName'] ??
+                                                          'Untitled Project',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      'Type: ${project['projectType'] ?? 'Full-Stack'} ${project['domain'] != null && project['domain'].toString().isNotEmpty ? '• Domain: ${project['domain']}' : ''}',
+                                                      style: const TextStyle(
+                                                        color: Colors.white38,
+                                                        fontSize: 11,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Chip(
+                                                label: Text(
+                                                  status,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 11,
+                                                  ),
+                                                ),
+                                                backgroundColor: statusColor,
+                                                padding: EdgeInsets.zero,
+                                                visualDensity:
+                                                    VisualDensity.compact,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              PopupMenuButton<String>(
+                                                icon: const Icon(
+                                                  Icons.more_vert,
+                                                  color: Colors.white70,
+                                                  size: 20,
+                                                ),
+                                                color: const Color(0xFF0F172A),
+                                                onSelected: (val) async {
+                                                  if (val == 'view' &&
+                                                      projId != null) {
+                                                    final res = await Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            ProjectDetailScreen(
+                                                              projectId: projId,
+                                                            ),
+                                                      ),
+                                                    );
+                                                    if (res == true)
+                                                      _fetchDashboardData();
+                                                  } else if (val == 'delete' &&
+                                                      projId != null) {
+                                                    _deleteProject(projId);
+                                                  }
+                                                },
+                                                itemBuilder: (context) => [
+                                                  const PopupMenuItem(
+                                                    value: 'view',
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons
+                                                              .visibility_outlined,
+                                                          color: Colors.white70,
+                                                          size: 16,
+                                                        ),
+                                                        SizedBox(width: 8),
+                                                        Text(
+                                                          'View Spec',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 13,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const PopupMenuItem(
+                                                    value: 'delete',
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.delete_outline,
+                                                          color:
+                                                              Colors.redAccent,
+                                                          size: 16,
+                                                        ),
+                                                        SizedBox(width: 8),
+                                                        Text(
+                                                          'Delete Project',
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .redAccent,
+                                                            fontSize: 13,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Text(
+                                            project['projectIdea'] ??
+                                                'No description provided.',
+                                            style: const TextStyle(
+                                              color: Colors.white60,
+                                              fontSize: 12,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                  child:
+                                                      LinearProgressIndicator(
+                                                        value: progress,
+                                                        backgroundColor:
+                                                            const Color(
+                                                              0xFF0F172A,
+                                                            ),
+                                                        color: progress == 1.0
+                                                            ? Colors.green
+                                                            : Colors
+                                                                  .orangeAccent,
+                                                        minHeight: 6,
+                                                      ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Text(
+                                                '$progressPercentage% Done',
+                                                style: const TextStyle(
+                                                  color: Colors.white54,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                  })(),
                 ],
               ),
             ),
